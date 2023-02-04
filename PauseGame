@@ -1,0 +1,46 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public class PauseGame : MonoBehaviour
+{
+    public Transform pauseJogo;
+
+    private void Start()
+    {
+    }
+
+    private void Update()
+    {
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            if(pauseJogo.gameObject.activeSelf)
+            {
+                pauseJogo.gameObject.SetActive(false);
+                Time.timeScale = 1f;
+            }
+
+            else
+            {
+                pauseJogo.gameObject.SetActive(true);
+                Time.timeScale = 0f;
+
+            }
+        }
+    }
+
+    public void Menu()
+    {
+        SceneManager.LoadScene(0);
+    }
+
+    public void Resume()
+    {
+        pauseJogo.gameObject.SetActive(false);
+        Time.timeScale = 1f;
+    }
+
+    
+
+}
