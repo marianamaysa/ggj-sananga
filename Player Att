@@ -1,0 +1,154 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+//using UnityEngine.UI;
+
+public class Player : MonoBehaviour
+{
+
+    public Animator anim;
+    public float speed;
+    public float jumpForce;
+
+    public bool isJumping;
+    public bool doubleJump;
+
+    public int vidaMaxima;
+    public float vidaAtual;
+
+    //[SerializeField] Image vidaOn;
+    //[SerializeField] Image vidaOff;
+
+
+    private Rigidbody2D rb;
+
+    float x, y;
+    private float maxYvel;
+
+    public AudioSource audioS;
+    public AudioClip[] Sounds;
+
+
+    void Start()
+    {
+        vidaAtual = vidaMaxima;
+        rb = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
+
+    }
+
+    void Update()
+    {
+        Move();
+        Jump();
+        y = rb.velocity.y;
+
+        if (vidaAtual <= 0)
+        {
+            SceneManager.LoadScene(4);
+            Debug.Log("Game Over");
+        }
+    }
+
+    void Move()
+    {
+        Vector3 movement = new Vector3(Input.GetAxis("Horizontal"), 0f, 0f);
+        transform.position += movement * Time.deltaTime * speed;
+        anim.SetBool("run", true);
+
+        if (Input.GetAxis("Horizontal") > 0f)
+        {
+
+            transform.eulerAngles = new Vector3(0f, 0f, 0f);
+        }
+
+        if (Input.GetAxis("Horizontal") < 0f)
+        {
+
+            transform.eulerAngles = new Vector3(0f, 180f, 0f);
+        }
+
+        if (Input.GetAxis("Horizontal") == 0f)
+        {
+            anim.SetBool("run", false);
+        }
+
+
+    }
+
+    void Jump()
+    {
+        if (Input.GetButtonDown("Jump"))
+        {
+            if (!isJumping)
+            {
+                audioS.clip = Sounds[0];
+                audioS.Play();
+                rb.AddForce(new Vector2(0f, jumpForce), ForceMode2D.Impulse);
+                doubleJump = true;
+                anim.SetTrigger("jump");
+            }
+            else
+            {
+                if (doubleJump)
+                {
+                    audioS.clip = Sounds[0];
+                    audioS.Play();
+                    rb.AddForce(new Vector2(0f, jumpForce), ForceMode2D.Impulse);
+                    doubleJump = false;
+                    anim.SetTrigger("jump");
+                }
+            }
+        }
+    }
+
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.layer == 6)
+        {
+            isJumping = false;
+            if (y <= -8)
+            {
+                TakeFallDamage();
+            }
+        }
+        else if (isJumping)
+        {
+            if (rb.velocity.y < y)
+            {
+
+                y = rb.velocity.y;
+            }
+        }
+    }
+
+
+    void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.gameObject.layer == 6)
+        {
+            isJumping = true;
+        }
+    }
+
+    public void ReceberDano()
+    {
+        audioS.clip = Sounds[1];
+        audioS.Play();
+        vidaAtual -= 1;
+        rb.AddForce(new Vector2(-1f, 1f), ForceMode2D.Impulse);
+        anim.SetTrigger("Hit");
+
+    }
+
+    public void TakeFallDamage()
+    {
+        audioS.clip = Sounds[1];
+        audioS.Play();
+        vidaAtual -= y / -6f;
+        Debug.Log("TakeFall");
+    }
+
+}
